@@ -12,7 +12,7 @@
     <div class="height-25"/>
     <b-list-group v-if="countries">
       <b-list-group-item v-for="country in countries" :key="country.name">
-        <country-row :country="country" @click="click"/>
+        <country-row :country="country" @click="click" class="country-row"/>
       </b-list-group-item>
     </b-list-group>
   </div>
@@ -40,5 +40,9 @@ export default {
 <style scoped lang="scss">
 .header {
   border-bottom: 1px solid #ce6262;
+}
+
+.country-row:hover {
+  cursor: pointer;
 }
 </style>
