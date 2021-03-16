@@ -4,6 +4,9 @@
       <loading/>
     </div>
     <div v-else>
+      <div class="text-left"><span>filter by region:</span></div>
+      <b-form-select v-model="selectedFilter" :options="options" @change="filterByRegion"/>
+      <div class="height-25"/>
       <page :countries="pageCountries"/>
       <div class="height-25"/>
       <b-row>
@@ -34,14 +37,20 @@ export default {
     isLoading: true,
     countries: null,
     pageNumber: 1,
-    pageSize: 20
+    pageSize: 20,
+    selectedFilter: null,
+    baseURL: 'https://restcountries.eu/rest/v2/',
+    options: [
+      {value: null, text: 'all', selected: true},
+      {value: 'Africa', text: 'Africa'},
+      {value: 'Americas', text: 'Americas'},
+      {value: 'Asia', text: 'Asia'},
+      {value: 'Europe', text: 'Europe'},
+      {value: 'Oceania', text: 'Oceania'},
+    ],
   }),
   created() {
-    axios.get('https://restcountries.eu/rest/v2/all')
-        .then(({data}) => {
-          this.countries = data
-          this.isLoading = false
-        }).catch(console.error)
+    this.fetchData('all')
   },
   methods: {
     nextPage() {
@@ -51,6 +60,21 @@ export default {
     previousPage() {
       if (this.pageNumber !== 1)
         this.pageNumber -= 1
+    },
+    filterByRegion() {
+      if (this.selectedFilter) {
+        this.fetchData('region/' + this.selectedFilter)
+      } else {
+        this.fetchData('all')
+      }
+    },
+    fetchData(param) {
+      this.isLoading = true
+      axios.get(this.baseURL + param)
+          .then(({data}) => {
+            this.countries = data
+            this.isLoading = false
+          }).catch(console.error)
     }
   },
   computed: {

@@ -40,7 +40,6 @@ export default {
   },
   methods: {
     click() {
-      console.log(this.country)
       this.$emit('click', this.country)
     }
   }
