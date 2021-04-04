@@ -1,43 +1,72 @@
 <template>
   <div id="app" class="container">
-    <div v-if="isLoading">
-      <loading/>
-    </div>
-    <div v-else>
-      <div class="text-left"><span>filter by region:</span></div>
-      <b-form-select v-model="selectedFilter" :options="options" @change="filterByRegion"/>
-      <div class="height-25"/>
-      <page :countries="pageCountries"/>
-      <div class="height-25"/>
-      <b-row>
-        <b-col>
-          <b-button @click="previousPage" pill variant="outline-info">previous page</b-button>
-        </b-col>
-        <b-col>
-          <b-button @click="nextPage" pill variant="outline-info">next page</b-button>
-        </b-col>
-      </b-row>
-      <div class="height-25"/>
-    </div>
+    <div class="text-left"><span>filter by region:</span></div>
+    <b-form-select v-model="selectedFilter" :options="options" @change="filterByRegion"/>
+    <b-table id="table"
+             :items="countries"
+             :per-page="pageSize"
+             :current-page="currentPage"
+             :busy="isLoading"
+             :fields="tableFields"
+             @row-clicked="rowClicked"
+             selectable
+             ref="table"
+             class="text-center"
+    >
+      <template #cell(flag)="data">
+        <b-img-lazy :key="data.item.name" :src="data.item.flag" width="100" height="60"/>
+      </template>
+
+    </b-table>
+    <b-pagination
+        v-model="currentPage"
+        :total-rows="countries.length"
+        :per-page="pageSize"
+        first-text="First"
+        prev-text="Prev"
+        next-text="Next"
+        last-text="Last"
+        aria-controls="table"
+        class="justify-content-center"
+    ></b-pagination>
+    <modal v-if="selectedCountry" :show.sync="showDetail" :country="selectedCountry"/>
   </div>
 </template>
 
 <script>
-import Page from "@/components/Page";
-import Loading from "@/components/Loading";
 import axios from "axios";
+import Modal from "@/components/TheModal";
 
 export default {
   name: 'App',
   components: {
-    Page,
-    Loading
+    Modal
   },
   data: () => ({
+    tableFields: [
+      'flag',
+      {
+        key: 'name',
+        formatter: 'cellFormatter'
+      },
+      {
+        key: 'capital',
+        formatter: 'cellFormatter'
+      },
+      {
+        key: 'region',
+        formatter: 'cellFormatter'
+      },
+      {
+        key: 'population',
+        formatter: 'cellFormatter'
+      },
+    ],
     isLoading: true,
     countries: null,
-    pageNumber: 1,
+    currentPage: 1,
     pageSize: 20,
+    totalRows: 0,
     selectedFilter: null,
     baseURL: 'https://restcountries.eu/rest/v2/',
     options: [
@@ -48,18 +77,26 @@ export default {
       {value: 'Europe', text: 'Europe'},
       {value: 'Oceania', text: 'Oceania'},
     ],
+    selectedCountry: null,
+    showDetail: false
   }),
   created() {
     this.fetchData('all')
   },
+  watch: {
+    showDetail: function () {
+      this.$refs.table.clearSelected()
+    }
+  },
   methods: {
-    nextPage() {
-      if (this.pageNumber * this.pageSize < this.countries.length)
-        this.pageNumber += 1
+    cellFormatter(value) {
+      if (value)
+        return value
+      return '_____'
     },
-    previousPage() {
-      if (this.pageNumber !== 1)
-        this.pageNumber -= 1
+    rowClicked(country) {
+      this.selectedCountry = country
+      this.showDetail = true
     },
     filterByRegion() {
       if (this.selectedFilter) {
@@ -79,29 +116,23 @@ export default {
   },
   computed: {
     pageCountries() {
-      const index = this.pageNumber - 1
+      const index = this.currentPage - 1
       if (index * this.pageSize >= this.countries.length) {
         return this.countries.slice(index * this.pageSize)
       } else {
-        return this.countries.slice(index * this.pageSize, this.pageNumber * this.pageSize)
+        return this.countries.slice(index * this.pageSize, this.currentPage * this.pageSize)
       }
     }
   }
+
 }
 </script>
 
 <style lang="scss">
-
-* {
-  font-family: IranSans !important;
-}
-
 #app {
   font-family: Avenir, Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  text-align: center;
   color: #2c3e50;
-  margin-top: 60px;
 }
 </style>

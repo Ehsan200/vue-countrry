@@ -3,7 +3,6 @@ import App from './App.vue'
 import {BootstrapVue} from 'bootstrap-vue'
 import 'bootstrap/dist/css/bootstrap.css'
 import 'bootstrap-vue/dist/bootstrap-vue.css'
-import './static/scss/style.scss'
 import ArrayDetail from "@/components/detail/ArrayDetail";
 import CountryDetail from "@/components/detail/CountryDetail";
 import ObjectDetail from "@/components/detail/ObjectDetail";
