@@ -1,12 +1,12 @@
 <template>
   <div id="app" class="container">
     <div class="text-left"><span>filter by region:</span></div>
-    <b-form-select v-model="selectedFilter" :options="options" @change="filterByRegion"/>
+    <b-form-select v-model="selectedFilter" :options="options"/>
     <b-table id="table"
              :items="countries"
              :per-page="pageSize"
              :current-page="currentPage"
-             :busy="isLoading"
+             :busy.sync="isLoading"
              :fields="tableFields"
              @row-clicked="rowClicked"
              selectable
@@ -16,11 +16,10 @@
       <template #cell(flag)="data">
         <b-img-lazy :key="data.item.name" :src="data.item.flag" width="100" height="60"/>
       </template>
-
     </b-table>
     <b-pagination
         v-model="currentPage"
-        :total-rows="countries.length"
+        :total-rows="totalRows"
         :per-page="pageSize"
         first-text="First"
         prev-text="Prev"
@@ -62,7 +61,7 @@ export default {
         formatter: 'cellFormatter'
       },
     ],
-    isLoading: true,
+    isLoading: false,
     countries: null,
     currentPage: 1,
     pageSize: 20,
@@ -81,11 +80,16 @@ export default {
     showDetail: false
   }),
   created() {
-    this.fetchData('all')
+    this.provideItems()
   },
   watch: {
-    showDetail: function () {
-      this.$refs.table.clearSelected()
+    showDetail: function (newValue) {
+      if (!newValue)
+        this.$refs.table.clearSelected()
+    },
+    selectedFilter: function () {
+      this.isLoading = true
+      this.provideItems()
     }
   },
   methods: {
@@ -98,32 +102,22 @@ export default {
       this.selectedCountry = country
       this.showDetail = true
     },
-    filterByRegion() {
+    provideItems() {
+      let promise
       if (this.selectedFilter) {
-        this.fetchData('region/' + this.selectedFilter)
+        promise = axios.get(this.baseURL + 'region/' + this.selectedFilter)
       } else {
-        this.fetchData('all')
+        promise = axios.get(this.baseURL + 'all')
       }
-    },
-    fetchData(param) {
-      this.isLoading = true
-      axios.get(this.baseURL + param)
-          .then(({data}) => {
-            this.countries = data
-            this.isLoading = false
-          }).catch(console.error)
+      promise.then(({data}) => {
+        this.countries = data
+        this.totalRows = data.length
+        this.isLoading = false
+      }).catch(() => {
+        console.error('in error')
+      })
     }
   },
-  computed: {
-    pageCountries() {
-      const index = this.currentPage - 1
-      if (index * this.pageSize >= this.countries.length) {
-        return this.countries.slice(index * this.pageSize)
-      } else {
-        return this.countries.slice(index * this.pageSize, this.currentPage * this.pageSize)
-      }
-    }
-  }
 
 }
 </script>
