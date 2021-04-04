@@ -11,15 +11,31 @@
 export default {
   name: "ObjectDetail",
   props: {
-    value: Object
+    value: {
+      type: Object,
+      required: true
+    }
+  },
+  methods: {
+    removeFalsyValues(obj) {
+      let newObj = {};
+      Object.keys(obj).forEach((prop) => {
+        if (
+            !(
+                obj[prop] === null ||
+                obj[prop] === undefined ||
+                !obj[prop].length
+            )
+        ) {
+          newObj[prop] = obj[prop];
+        }
+      });
+      return newObj
+    }
   },
   computed: {
     countryEntries() {
-      for (const valueKey in this.value) {
-        if (this.value[valueKey] === null || this.value[valueKey] === undefined || !this.value[valueKey].length)
-          delete this.value[valueKey]
-      }
-      return Object.entries(this.value)
+      return Object.entries(this.removeFalsyValues(this.value))
     }
   },
 }

@@ -14,7 +14,7 @@
     <div v-else-if="isArray">
       <template v-if="value.length">
         <span>{{ name }}: </span>
-        <b-button v-b-toggle="name" pill variant="outline-info">show  details</b-button>
+        <b-button v-b-toggle="name" pill variant="outline-info">show details</b-button>
         <div class="height-10"/>
         <b-collapse :id="name">
           <array-detail :array="value"/>
@@ -37,8 +37,14 @@ export default {
     isObject: false,
   }),
   props: {
-    name: String,
-    value: [String, Object, Number, Array]
+    name: {
+      type: String,
+      required: true
+    },
+    value: {
+      type: [String, Object, Number, Array],
+      required: true
+    },
   },
   created() {
     switch (typeof this.value) {

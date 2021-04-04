@@ -12,13 +12,19 @@
 export default {
   name: "Modal",
   props: {
-    country: Object,
-    show: Boolean,
+    country: {
+      required: true,
+      type: Object
+    },
+    show: {
+      required: true,
+      type: Boolean
+    },
   },
   computed: {
     copyCountry: function () {
-      const copy = {...this.country}
-      delete copy.flag
+      // eslint-disable-next-line no-unused-vars
+      const {flag, ...copy} = {...this.country}
       return copy
     }
   },
